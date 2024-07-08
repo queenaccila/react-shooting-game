@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Wizard } from "./Wizard";
 import { CapsuleCollider, RigidBody } from "@react-three/rapier";
 import { useFrame } from "@react-three/fiber";
+import { isHost } from "playroomkit";
 
 const MOVEMENT_SPEED = 200;
 
@@ -27,11 +28,26 @@ export const CharacterController = ({ state, joystick, userPlayer, ...props }) =
     } else {
       setAnimation("Idle");
     }
+
+    if (isHost()) {
+      state.setState("pos", rigidbody.current.translation());
+    } else {
+      const pos = state.getState("pos");
+      if (pos) {
+        rigidbody.current.setTranslation(pos);
+      }
+    }
   });
 
   return (
     <group ref={group} {...props}>
-      <RigidBody ref={rigidbody} colliders={false} linearDamping={12} lockRotations>
+      <RigidBody
+        ref={rigidbody}
+        colliders={false}
+        linearDamping={12}
+        lockRotations
+        type={isHost() ? "dynamic" : "kinematicPosition"}
+      >
         <group ref={character}>
           <Wizard 
             color={state.state.profile?.color}
