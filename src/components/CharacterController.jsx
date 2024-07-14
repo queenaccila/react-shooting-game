@@ -4,16 +4,81 @@ import { CapsuleCollider, RigidBody, vec3 } from "@react-three/rapier";
 import { isHost } from "playroomkit";
 import { useEffect, useRef, useState } from "react";
 import { Wizard } from "./Wizard";
+const MOVEMENT_SPEED = 202;
+const FIRE_RATE = 380;
+export const WEAPON_OFFSET = {
+  x: -0.2,
+  y: 1.4,
+  z: 0.8,
+};
 
-const MOVEMENT_SPEED = 200;
-
-export const CharacterController = ({ state, joystick, userPlayer, ...props }) => {
+export const CharacterController = ({
+  state,
+  joystick,
+  userPlayer,
+  onKilled,
+  onFire,
+  downgradedPerformance,
+  ...props
+}) => {
   const group = useRef();
   const character = useRef();
   const rigidbody = useRef();
   const [animation, setAnimation] = useState("Idle");
+  const lastShoot = useRef(0);
+
+  const scene = useThree((state) => state.scene);
+  const spawnRandomly = () => {
+    const spawns = [];
+    for (let i = 0; i < 1000; i++) {
+      const spawn = scene.getObjectByName(`spawn_${i}`);
+      if (spawn) {
+        spawns.push(spawn);
+      } else {
+        break;
+      }
+    }
+  
+    if (spawns.length > 0) {
+      const randomIndex = Math.floor(Math.random() * spawns.length);
+      const spawnPos = spawns[randomIndex].position;
+      if (spawnPos) {
+        rigidbody.current.setTranslation(spawnPos);
+      } else {
+        console.warn('Spawn position is undefined:', spawns[randomIndex]);
+        // Handle scenario where spawn position is undefined
+      }
+    } else {
+      console.warn('No valid spawn points found in the scene.');
+      // Handle scenario where no spawn points are found
+    }
+  };
+  
+
+  useEffect(() => {
+    if (isHost()) {
+      spawnRandomly();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (state.state.dead) {
+      const audio = new Audio("/audios/dead.mp3");
+      audio.volume = 0.5;
+      audio.play();
+    }
+  }, [state.state.dead]);
+
+  useEffect(() => {
+    if (state.state.health < 100) {
+      const audio = new Audio("/audios/hurt.mp3");
+      audio.volume = 0.4;
+      audio.play();
+    }
+  }, [state.state.health]);
 
   useFrame((_, delta) => {
+    // CAMERA FOLLOW
     if (controls.current) {
       const cameraDistanceY = window.innerWidth < 1024 ? 16 : 20;
       const cameraDistanceZ = window.innerWidth < 1024 ? 12 : 16;
@@ -28,7 +93,13 @@ export const CharacterController = ({ state, joystick, userPlayer, ...props }) =
         true
       );
     }
-    
+
+    if (state.state.dead) {
+      setAnimation("Death");
+      return;
+    }
+
+    // Update player position based on joystick state
     const angle = joystick.angle();
     if (joystick.isJoystickPressed() && angle) {
       setAnimation("Run");
@@ -46,6 +117,27 @@ export const CharacterController = ({ state, joystick, userPlayer, ...props }) =
       setAnimation("Idle");
     }
 
+    // Check if fire button is pressed
+    if (joystick.isPressed("fire")) {
+      // fire
+      setAnimation(
+        joystick.isJoystickPressed() && angle ? "Shoot_OneHanded" : "Idle" // Provide a default animation state if condition fails
+      );
+      if (isHost()) {
+        if (Date.now() - lastShoot.current > FIRE_RATE) {
+          lastShoot.current = Date.now();
+          const newBullet = {
+            id: state.id + "-" + +new Date(),
+            position: vec3(rigidbody.current.translation()),
+            angle,
+            player: state.id,
+          };
+          onFire(newBullet);
+        }
+      }
+    }
+
+
     if (isHost()) {
       state.setState("pos", rigidbody.current.translation());
     } else {
@@ -57,9 +149,16 @@ export const CharacterController = ({ state, joystick, userPlayer, ...props }) =
   });
 
   const controls = useRef();
+  const directionalLight = useRef();
+
+  useEffect(() => {
+    if (character.current && userPlayer) {
+      directionalLight.current.target = character.current;
+    }
+  }, [character.current]);
 
   return (
-    <group ref={group} {...props}>
+    <group {...props} ref={group}>
       {userPlayer && <CameraControls ref={controls} />}
       <RigidBody
         ref={rigidbody}
@@ -67,15 +166,118 @@ export const CharacterController = ({ state, joystick, userPlayer, ...props }) =
         linearDamping={12}
         lockRotations
         type={isHost() ? "dynamic" : "kinematicPosition"}
+        onIntersectionEnter={({ other }) => {
+          if (
+            isHost() &&
+            other.rigidBody.userData.type === "bullet" &&
+            state.state.health > 0
+          ) {
+            const newHealth =
+              state.state.health - other.rigidBody.userData.damage;
+            if (newHealth <= 0) {
+              state.setState("deaths", state.state.deaths + 1);
+              state.setState("dead", true);
+              state.setState("health", 0);
+              rigidbody.current.setEnabled(false);
+              setTimeout(() => {
+                spawnRandomly();
+                rigidbody.current.setEnabled(true);
+                state.setState("health", 100);
+                state.setState("dead", false);
+              }, 2000);
+              onKilled(state.id, other.rigidBody.userData.player);
+            } else {
+              state.setState("health", newHealth);
+            }
+          }
+        }}
       >
+        <PlayerInfo state={state.state} />
         <group ref={character}>
-          <Wizard 
+          <Wizard
             color={state.state.profile?.color}
             animation={animation}
           />
+          {userPlayer && (
+            <Crosshair
+              position={[WEAPON_OFFSET.x, WEAPON_OFFSET.y, WEAPON_OFFSET.z]}
+            />
+          )}
         </group>
+        {userPlayer && (
+          <directionalLight
+            ref={directionalLight}
+            position={[25, 18, -25]}
+            intensity={0.3}
+            castShadow={!downgradedPerformance} // Disable shadows on low-end devices
+            shadow-camera-near={0}
+            shadow-camera-far={100}
+            shadow-camera-left={-20}
+            shadow-camera-right={20}
+            shadow-camera-top={20}
+            shadow-camera-bottom={-20}
+            shadow-mapSize-width={2048}
+            shadow-mapSize-height={2048}
+            shadow-bias={-0.0001}
+          />
+        )}
         <CapsuleCollider args={[0.7, 0.6]} position={[0, 1.28, 0]} />
       </RigidBody>
+    </group>
+  );
+};
+
+const PlayerInfo = ({ state }) => {
+  const health = state.health;
+  const name = state.profile.name;
+  return (
+    <Billboard position-y={5}>
+      <Text position-y={0.36} fontSize={0.4}>
+        {name}
+        <meshBasicMaterial color={state.profile.color} />
+      </Text>
+      <mesh position-z={-0.1}>
+        <planeGeometry args={[1, 0.2]} />
+        <meshBasicMaterial color="black" transparent opacity={0.5} />
+      </mesh>
+      <mesh scale-x={health / 100} position-x={-0.5 * (1 - health / 100)}>
+        <planeGeometry args={[1, 0.2]} />
+        <meshBasicMaterial color="red" />
+      </mesh>
+    </Billboard>
+  );
+};
+
+const Crosshair = (props) => {
+  return (
+    <group {...props}>
+      <mesh position-z={1}>
+        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <meshBasicMaterial color="black" transparent opacity={0.9} />
+      </mesh>
+      <mesh position-z={2}>
+        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <meshBasicMaterial color="black" transparent opacity={0.85} />
+      </mesh>
+      <mesh position-z={3}>
+        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <meshBasicMaterial color="black" transparent opacity={0.8} />
+      </mesh>
+
+      <mesh position-z={4.5}>
+        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <meshBasicMaterial color="black" opacity={0.7} transparent />
+      </mesh>
+
+      <mesh position-z={6.5}>
+        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <meshBasicMaterial color="black" opacity={0.6} transparent />
+      </mesh>
+
+      <mesh position-z={9}>
+        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <meshBasicMaterial color="black" opacity={0.2} transparent />
+      </mesh>
     </group>
   );
 };
