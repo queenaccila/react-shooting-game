@@ -19,6 +19,7 @@ export function Wizard({
     actions["Death"].loop = LoopOnce;
     actions["Death"].clampWhenFinished = true;
   }
+  
   useEffect(() => {
     actions[animation].reset().fadeIn(0.2).play();
     return () => actions[animation]?.fadeOut(0.2);

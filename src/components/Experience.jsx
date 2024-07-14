@@ -17,8 +17,6 @@ export const Experience = () => {
 
     // Create a joystick controller for each joining player
     onPlayerJoin((state) => {
-      // Joystick will only create UI for current player (myPlayer)
-      // For others, it will only sync their state
       const joystick = new Joystick(state, {
         type: "angular",
         buttons: [{ id: "fire", label: "Fire" }],

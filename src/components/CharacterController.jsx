@@ -60,6 +60,7 @@ export const CharacterController = ({ state, joystick, userPlayer, ...props }) =
 
   return (
     <group ref={group} {...props}>
+      {userPlayer && <CameraControls ref={controls} />}
       <RigidBody
         ref={rigidbody}
         colliders={false}
