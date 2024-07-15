@@ -6,6 +6,7 @@ import {
   myPlayer,
   onPlayerJoin,
   useMultiplayerState,
+  addBot,
 } from "playroomkit";
 import { useEffect, useState } from "react";
 import { Bullet } from "./Bullet";
@@ -17,7 +18,7 @@ export const Experience = ({ downgradedPerformance = false }) => {
   const [players, setPlayers] = useState([]);
   const start = async () => {
     // Start the game
-    await insertCoin();
+    await insertCoin({ matchmaking: true });
 
     // Create a joystick controller for each join ing player
     onPlayerJoin((state) => {
@@ -71,6 +72,7 @@ export const Experience = ({ downgradedPerformance = false }) => {
     setNetworkHits(hits);
   }, [hits]);
 
+  // when player dies, adds 1 kill
   const onKilled = (_victim, killer) => {
     const killerState = players.find((p) => p.state.id === killer).state;
     killerState.setState("kills", killerState.state.kills + 1);

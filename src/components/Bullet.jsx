@@ -7,7 +7,7 @@ import { WEAPON_OFFSET } from "./CharacterController";
 const BULLET_SPEED = 20;
 
 const bulletMaterial = new MeshBasicMaterial({
-  color: "hotpink",
+  color: "white",
   toneMapped: false,
 });
 
