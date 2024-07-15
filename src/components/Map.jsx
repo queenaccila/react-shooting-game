@@ -3,7 +3,7 @@ import { RigidBody } from "@react-three/rapier";
 import { useEffect } from "react";
 
 export const Map = () => {
-  const map = useGLTF("/models/game-scene.glb");
+  const map = useGLTF("/models/game-scene_3.glb");
   useEffect(() => {
     map.scene.traverse((child) => {
       if (child.isMesh) {
@@ -21,4 +21,4 @@ export const Map = () => {
   );
 };
 
-useGLTF.preload("/models/game-scene.glb");
+useGLTF.preload("/models/game-scene_3.glb");

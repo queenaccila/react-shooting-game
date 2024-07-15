@@ -5,6 +5,7 @@ import {
   isHost,
   myPlayer,
   onPlayerJoin,
+  startMatchmaking,
   useMultiplayerState,
 } from "playroomkit";
 import { useEffect, useState } from "react";
@@ -71,6 +72,7 @@ export const Experience = ({ downgradedPerformance = false }) => {
     setNetworkHits(hits);
   }, [hits]);
 
+  // when player dies, adds 1 kill
   const onKilled = (_victim, killer) => {
     const killerState = players.find((p) => p.state.id === killer).state;
     killerState.setState("kills", killerState.state.kills + 1);
