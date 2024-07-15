@@ -5,8 +5,8 @@ import {
   isHost,
   myPlayer,
   onPlayerJoin,
-  startMatchmaking,
   useMultiplayerState,
+  addBot,
 } from "playroomkit";
 import { useEffect, useState } from "react";
 import { Bullet } from "./Bullet";
@@ -18,7 +18,7 @@ export const Experience = ({ downgradedPerformance = false }) => {
   const [players, setPlayers] = useState([]);
   const start = async () => {
     // Start the game
-    await insertCoin();
+    await insertCoin({ matchmaking: true });
 
     // Create a joystick controller for each join ing player
     onPlayerJoin((state) => {
