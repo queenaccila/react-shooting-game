@@ -121,7 +121,7 @@ export const CharacterController = ({
     if (joystick.isPressed("fire")) {
       // fire
       setAnimation(
-        joystick.isJoystickPressed() && angle ? "Shoot_OneHanded" : "Idle" // Provide a default animation state if condition fails
+        joystick.isJoystickPressed() && angle ? "Shoot_OneHanded" : "Shoot_OneHanded" // Provide a default animation state if condition fails
       );
       if (isHost()) {
         if (Date.now() - lastShoot.current > FIRE_RATE) {
