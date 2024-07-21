@@ -37,12 +37,14 @@ export const BulletHit = ({ nb = 100, position, onEnded }) => {
   );
 
   useEffect(() => {
+    console.log("BulletHit effect started at position:", position);
     setTimeout(() => {
       if (isHost()) {
+        console.log("BulletHit effect ended");
         onEnded();
       }
     }, 500);
-  }, []);
+  }, [position, onEnded]);
 
   return (
     <group position={[position.x, position.y, position.z]}>

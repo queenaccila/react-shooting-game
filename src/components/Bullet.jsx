@@ -26,6 +26,7 @@ export const Bullet = ({ player, angle, position, onHit }) => {
     };
 
     rigidbody.current.setLinvel(velocity, true);
+    console.log("Bullet fired with velocity:", velocity);
   }, []);
 
   return (
@@ -39,6 +40,25 @@ export const Bullet = ({ player, angle, position, onHit }) => {
           ref={rigidbody}
           gravityScale={0}
           onIntersectionEnter={(e) => {
+            console.log("Bullet intersection detected with:", e.other.rigidBody.userData.type);
+            if (isHost() && e.other.rigidBody.userData?.type === "healthBox") {
+              console.log("Health box hit detected");
+              rigidbody.current.setEnabled(false); // 禁用子弹
+              const boxId = e.other.rigidBody.userData.id;
+              onHit(vec3(rigidbody.current.translation()), boxId, player);
+              
+              // 禁用并移除小方块
+              e.other.rigidBody.setEnabled(false);
+              const healthBoxMesh = e.other.object;
+              if (healthBoxMesh) {
+                console.log("Health box mesh found, removing from scene");
+                healthBoxMesh.visible = false; // 隐藏网格对象
+                healthBoxMesh.removeFromParent(); // 从场景中移除网格对象
+                console.log(`Health box with ID ${boxId} removed from scene.`);
+              } else {
+                console.log("Health box mesh not found");
+              }
+            }
             if (isHost() && e.other.rigidBody.userData?.type !== "bullet") {
               rigidbody.current.setEnabled(false);
               onHit(vec3(rigidbody.current.translation()));

@@ -1,11 +1,13 @@
 import { Billboard, CameraControls, Text } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { CapsuleCollider, RigidBody, vec3 } from "@react-three/rapier";
-import { isHost } from "playroomkit";
+import { isHost, myPlayer } from "playroomkit";
 import { useEffect, useRef, useState } from "react";
 import { Wizard } from "./Wizard";
+
 const MOVEMENT_SPEED = 202;
 const FIRE_RATE = 380;
+
 export const WEAPON_OFFSET = {
   x: -0.2,
   y: 1.4,
@@ -23,7 +25,7 @@ export const CharacterController = ({
 }) => {
   const group = useRef();
   const character = useRef();
-  const rigidbody = useRef();
+  const rigidbody = useRef(null);
   const [animation, setAnimation] = useState("Idle");
   const lastShoot = useRef(0);
 
@@ -38,7 +40,7 @@ export const CharacterController = ({
         break;
       }
     }
-  
+
     if (spawns.length > 0) {
       const randomIndex = Math.floor(Math.random() * spawns.length);
       const spawnPos = spawns[randomIndex].position;
@@ -46,14 +48,11 @@ export const CharacterController = ({
         rigidbody.current.setTranslation(spawnPos);
       } else {
         console.warn('Spawn position is undefined:', spawns[randomIndex]);
-        // Handle scenario where spawn position is undefined
       }
     } else {
       console.warn('No valid spawn points found in the scene.');
-      // Handle scenario where no spawn points are found
     }
   };
-  
 
   useEffect(() => {
     if (isHost()) {
@@ -78,6 +77,10 @@ export const CharacterController = ({
   }, [state.state.health]);
 
   useFrame((_, delta) => {
+    if (!rigidbody.current) {
+      return;
+    }
+
     // CAMERA FOLLOW
     if (controls.current) {
       const cameraDistanceY = window.innerWidth < 1024 ? 16 : 20;
@@ -105,7 +108,6 @@ export const CharacterController = ({
       setAnimation("Run");
       character.current.rotation.y = angle;
 
-      // move character in its own direction
       const impulse = {
         x: Math.sin(angle) * MOVEMENT_SPEED * delta,
         y: 0,
@@ -119,9 +121,8 @@ export const CharacterController = ({
 
     // Check if fire button is pressed
     if (joystick.isPressed("fire")) {
-      // fire
       setAnimation(
-        joystick.isJoystickPressed() && angle ? "Shoot_OneHanded" : "Shoot_OneHanded" // Provide a default animation state if condition fails
+        joystick.isJoystickPressed() && angle ? "Shoot_OneHanded" : "Shoot_OneHanded"
       );
       if (isHost()) {
         if (Date.now() - lastShoot.current > FIRE_RATE) {
@@ -136,7 +137,6 @@ export const CharacterController = ({
         }
       }
     }
-
 
     if (isHost()) {
       state.setState("pos", rigidbody.current.translation());
@@ -167,6 +167,18 @@ export const CharacterController = ({
         lockRotations
         type={isHost() ? "dynamic" : "kinematicPosition"}
         onIntersectionEnter={({ other }) => {
+          console.log("Player intersection detected with:", other.rigidBody.userData.type);
+          if (isHost() && other.rigidBody.userData.type === "healthBox") {
+            console.log("Player hit health box");
+            other.rigidBody.setEnabled(false); // 禁用小方块
+            if (other.rigidBody.object) {
+              other.rigidBody.object.visible = false; // 确保小方块在场景中不可见
+            }
+            setTimeout(() => {
+              other.rigidBody.removeFromParent();
+            }, 500); // 延时以确保特效完成
+          }
+
           if (
             isHost() &&
             other.rigidBody.userData.type === "bullet" &&
@@ -209,7 +221,7 @@ export const CharacterController = ({
             ref={directionalLight}
             position={[25, 18, -25]}
             intensity={0.3}
-            castShadow={!downgradedPerformance} // Disable shadows on low-end devices
+            castShadow={!downgradedPerformance}
             shadow-camera-near={0}
             shadow-camera-far={100}
             shadow-camera-left={-20}

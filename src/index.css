@@ -6,3 +6,52 @@
 body {
   margin: 0;
 }
+
+.quiz-modal .quiz-content {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  width: 400px; /* 增加弹窗的宽度 */
+  font-size: 14px; /* 调整字体大小 */
+  position: absolute; /* 确保弹窗在屏幕中央 */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.quiz-modal .options {
+  display: flex;
+  flex-direction: column;
+}
+
+.quiz-modal button {
+  margin: 10px 0;
+  padding: 10px;
+  font-size: 14px; /* 调整按钮的字体大小 */
+  cursor: pointer;
+}
+
+.quiz-modal button.correct {
+  background-color: green;
+  color: white;
+}
+
+.quiz-modal button.incorrect {
+  background-color: red;
+  color: white;
+}
+
+
+
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  border: 1px solid black;
+  z-index: 1000;
+}
