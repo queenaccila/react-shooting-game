@@ -3,7 +3,7 @@ import { Html } from '@react-three/drei';
 
 const questions = [
   {
-    text: "1+1=？",
+    text: "1 + 1= ？",
     options: [
       { id: 1, text: "1" },
       { id: 2, text: "2" },
@@ -13,7 +13,7 @@ const questions = [
     correctAnswerId: 2,
   },
   {
-    text: "2+3=？",
+    text: "2 + 3 = ？",
     options: [
       { id: 1, text: "2" },
       { id: 2, text: "5" },
@@ -54,7 +54,7 @@ const questions = [
   },
 ];
 
-const QuizModal = ({ isOpen, onClose, onSuccess }) => {
+const QuizModal = ({ isOpen, onClose, onSuccess, position }) => {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [isCorrect, setIsCorrect] = useState(null);
   const [timeLeft, setTimeLeft] = useState(5);
@@ -103,7 +103,7 @@ const QuizModal = ({ isOpen, onClose, onSuccess }) => {
   if (!isOpen) return null;
 
   return (
-    <Html center>
+    <Html center position={position}>
       <div className="quiz-modal">
         <div className="quiz-content">
           <h2>{question.text}</h2>

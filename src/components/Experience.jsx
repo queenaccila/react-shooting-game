@@ -1,6 +1,5 @@
-// Existing code in Experience.jsx
-
-import React, { useEffect, useState } from 'react';
+// Experience.jsx
+import React, { useState, useEffect } from 'react';
 import { Environment } from "@react-three/drei";
 import {
   Joystick,
@@ -12,12 +11,12 @@ import {
   addBot,
 } from "playroomkit";
 import { BoxGeometry, MeshStandardMaterial, Mesh } from "three";
-import { Bullet } from "./Bullet";  // 确保正确导入 Bullet 组件
+import { Bullet } from "./Bullet";
 import { BulletHit } from "./BulletHit";
 import { CharacterController } from "./CharacterController";
 import { Map } from "./Map";
 import { v4 as uuidv4 } from 'uuid';
-import QuizModal from './QuizModal';  // 导入 QuizModal 组件
+import QuizModal from './QuizModal';
 
 const generateRandomBoxes = (numBoxes, xRange, zRange) => {
   const boxes = [];
@@ -43,12 +42,11 @@ export const Experience = ({ downgradedPerformance = false }) => {
   const [boxes, setBoxes] = useState(generateRandomBoxes(1000, [-50, 50], [-50, 50]));
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [currentPlayerId, setCurrentPlayerId] = useState(null);
+  const [currentPlayerPosition, setCurrentPlayerPosition] = useState([0, 0, 0]);
 
   const start = async () => {
-    // Start the game
     await insertCoin({ matchmaking: true });
 
-    // Create a joystick controller for each joining player
     onPlayerJoin((state) => {
       const joystick = new Joystick(state, {
         type: "angular",
@@ -72,10 +70,7 @@ export const Experience = ({ downgradedPerformance = false }) => {
   const [bullets, setBullets] = useState([]);
   const [hits, setHits] = useState([]);
 
-  const [networkBullets, setNetworkBullets] = useMultiplayerState(
-    "bullets",
-    []
-  );
+  const [networkBullets, setNetworkBullets] = useMultiplayerState("bullets", []);
   const [networkHits, setNetworkHits] = useMultiplayerState("hits", []);
 
   const onFire = (bullet) => {
@@ -83,14 +78,16 @@ export const Experience = ({ downgradedPerformance = false }) => {
     console.log("Bullet fired:", bullet);
   };
 
-  const onHit = (position, boxId, playerId) => {
+  const onHit = (position, boxId, playerId, bulletId) => {
     if (boxId) {
       setHits((hits) => [...hits, { id: boxId, position }]);
       console.log("Bullet hit at position:", position, "with box ID:", boxId);
       removeBox(boxId);
+      removeBullet(bulletId);
       if (playerId === myPlayer()?.id) {
         setIsQuizOpen(true);
         setCurrentPlayerId(playerId);
+        setCurrentPlayerPosition(position);
       }
     } else {
       console.warn("Box ID is undefined. Cannot remove box.");
@@ -116,6 +113,13 @@ export const Experience = ({ downgradedPerformance = false }) => {
       const newBoxes = prevBoxes.filter((box) => box.id !== boxId);
       console.log("New boxes length:", newBoxes.length);
       return newBoxes;
+    });
+  };
+
+  const removeBullet = (bulletId) => {
+    setBullets((prevBullets) => {
+      const newBullets = prevBullets.filter((bullet) => bullet.id !== bulletId);
+      return newBullets;
     });
   };
 
@@ -155,7 +159,7 @@ export const Experience = ({ downgradedPerformance = false }) => {
           key={bullet.id}
           {...bullet}
           onHit={(position, boxId) => {
-            onHit(position, boxId, bullet.player);
+            onHit(position, boxId, bullet.player, bullet.id);
           }}
         />
       ))}
@@ -167,6 +171,7 @@ export const Experience = ({ downgradedPerformance = false }) => {
         isOpen={isQuizOpen}
         onClose={handleQuizClose}
         onSuccess={handleQuizSuccess}
+        position={currentPlayerPosition}
       />
     </>
   );
