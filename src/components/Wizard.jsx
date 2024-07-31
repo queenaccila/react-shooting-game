@@ -1,3 +1,7 @@
+// code referenced from https://github.com/wass08/r3f-playroom-multiplayer-shooter-game/blob/main/src/components/CharacterSoldier.jsx
+// code was modified to fit the wizard model instead of the character solider model
+// weapons were not included since the wizards do not need weapons
+
 import React, { useRef, useEffect, useMemo } from 'react'
 import { useGLTF, useAnimations } from '@react-three/drei'
 import { useGraph } from "@react-three/fiber";
@@ -10,7 +14,7 @@ export function Wizard({
     ...props
   }) {
   const group = useRef()
-  const { scene, materials, animations } = useGLTF('/models/Wizard.gltf')
+  const { scene, materials, animations } = useGLTF('/models/Wizard.gltf') // used different model
   const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
   const { nodes } = useGraph(clone);
   const { actions } = useAnimations(animations, group)
@@ -33,6 +37,7 @@ export function Wizard({
     [color]
   );
 
+  // changed the different model piece names due to the model itself being structure differently
   useEffect(() => {
     // ASSIGNING CHARACTER COLOR
     clone.traverse((child) => {
@@ -45,6 +50,8 @@ export function Wizard({
       }
     });
   }, [clone, playerColorMaterial]);
+
+// generated using https://github.com/pmndrs/gltfjsx which converts gltf files to jsx files
 
   return (
     <group ref={group} {...props} dispose={null}>

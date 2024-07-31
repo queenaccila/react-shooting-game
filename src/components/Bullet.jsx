@@ -1,3 +1,4 @@
+// start of code from https://github.com/wass08/r3f-playroom-multiplayer-shooter-game/blob/main/src/components/Bullet.jsx
 import { RigidBody, vec3 } from "@react-three/rapier";
 import { isHost } from "playroomkit";
 import { useEffect, useRef } from "react";
@@ -7,7 +8,7 @@ import { WEAPON_OFFSET } from "./CharacterController";
 const BULLET_SPEED = 20;
 
 const bulletMaterial = new MeshBasicMaterial({
-  color: "white",
+  color: "white", // assigned different color
   toneMapped: false,
 });
 
@@ -17,7 +18,7 @@ export const Bullet = ({ player, angle, position, onHit }) => {
   const rigidbody = useRef();
 
   useEffect(() => {
-    const audio = new Audio("/audios/rifle.mp3");
+    const audio = new Audio("/audios/rifle.mp3"); // intended to add new audio but didn't have time
     audio.play();
     const velocity = {
       x: Math.sin(angle) * BULLET_SPEED,
@@ -29,6 +30,7 @@ export const Bullet = ({ player, angle, position, onHit }) => {
     console.log("Bullet fired with velocity:", velocity);
   }, []);
 
+  // following code was modified from https://github.com/wass08/r3f-playroom-multiplayer-shooter-game/blob/main/src/components/Bullet.jsx
   return (
     <group position={[position.x, position.y, position.z]} rotation-y={angle}>
       <group

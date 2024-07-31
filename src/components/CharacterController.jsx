@@ -1,3 +1,5 @@
+// code referenced from https://github.com/wass08/r3f-playroom-multiplayer-shooter-game/blob/main/src/components/CharacterController.jsx
+
 import { Billboard, CameraControls, Text } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { CapsuleCollider, RigidBody, vec3 } from "@react-three/rapier";
@@ -41,6 +43,7 @@ export const CharacterController = ({
       }
     }
 
+    // modified spawn pos
     if (spawns.length > 0) {
       const randomIndex = Math.floor(Math.random() * spawns.length);
       const spawnPos = spawns[randomIndex].position;
@@ -54,12 +57,14 @@ export const CharacterController = ({
     }
   };
 
+  // continued use of the template
   useEffect(() => {
     if (isHost()) {
       spawnRandomly();
     }
   }, []);
 
+  // intended to add audio later, but not enough time
   useEffect(() => {
     if (state.state.dead) {
       const audio = new Audio("/audios/dead.mp3");
@@ -120,6 +125,7 @@ export const CharacterController = ({
     }
 
     // Check if fire button is pressed
+    // Animation names changed due to character gltf files being different
     if (joystick.isPressed("fire")) {
       setAnimation(
         joystick.isJoystickPressed() && angle ? "Shoot_OneHanded" : "Shoot_OneHanded"
@@ -157,6 +163,7 @@ export const CharacterController = ({
     }
   }, [character.current]);
 
+  // modified this part of the code to fit the blocks and questions
   return (
     <group {...props} ref={group}>
       {userPlayer && <CameraControls ref={controls} />}
@@ -218,6 +225,7 @@ export const CharacterController = ({
         </group>
         {userPlayer && (
           <directionalLight
+          // camera settings were not changed
             ref={directionalLight}
             position={[25, 18, -25]}
             intensity={0.3}
@@ -239,6 +247,7 @@ export const CharacterController = ({
   );
 };
 
+// player info and crosshair settings were not changed
 const PlayerInfo = ({ state }) => {
   const health = state.health;
   const name = state.profile.name;

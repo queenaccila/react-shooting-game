@@ -22,6 +22,7 @@ const generateRandomBoxes = (numBoxes, xRange, zRange) => {
   return boxes;
 };
 
+// Map is the only code referenced from https://github.com/wass08/r3f-playroom-multiplayer-shooter-game/blob/main/src/components/Map.jsx
 export const Map = ({ boxes, removeBox }) => {
   const map = useGLTF("/models/game-scene_6.glb");
 
@@ -33,6 +34,7 @@ export const Map = ({ boxes, removeBox }) => {
       }
     });
   }, [map]);
+// end of referenced code
 
   return (
     <>

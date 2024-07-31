@@ -1,3 +1,4 @@
+// code taken from https://github.com/wass08/r3f-playroom-multiplayer-shooter-game/blob/main/src/components/BulletHit.jsx
 import { Instance, Instances } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { isHost } from "playroomkit";
@@ -37,14 +38,14 @@ export const BulletHit = ({ nb = 100, position, onEnded }) => {
   );
 
   useEffect(() => {
-    console.log("BulletHit effect started at position:", position);
+    console.log("BulletHit effect started at position:", position); // added in console to debug logic
     setTimeout(() => {
       if (isHost()) {
-        console.log("BulletHit effect ended");
+        console.log("BulletHit effect ended"); // added in console to debug logic
         onEnded();
       }
     }, 500);
-  }, [position, onEnded]);
+  }, [position, onEnded]); // included position and onEnded state
 
   return (
     <group position={[position.x, position.y, position.z]}>

@@ -1,3 +1,6 @@
+// used from https://github.com/wass08/r3f-playroom-multiplayer-shooter-game/blob/main/src/components/Leaderboard.jsx
+// we didn't have time to implement this feature so this component is not custom fit and not used
+
 import { usePlayersList } from "playroomkit";
 
 export const Leaderboard = () => {

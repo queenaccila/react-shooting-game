@@ -1,4 +1,5 @@
 // Experience.jsx
+// code referenced from https://github.com/wass08/r3f-playroom-multiplayer-shooter-game/blob/main/src/components/Experience.jsx
 import React, { useState, useEffect } from 'react';
 import { Environment } from "@react-three/drei";
 import {
@@ -16,8 +17,9 @@ import { BulletHit } from "./BulletHit";
 import { CharacterController } from "./CharacterController";
 import { Map } from "./Map";
 import { v4 as uuidv4 } from 'uuid';
-import QuizModal from './QuizModal';
+import QuizModal from './QuizModal'; //included other components for custom block hitting
 
+// custom component made by us
 const generateRandomBoxes = (numBoxes, xRange, zRange) => {
   const boxes = [];
   for (let i = 0; i < numBoxes; i++) {
@@ -37,6 +39,7 @@ const generateRandomBoxes = (numBoxes, xRange, zRange) => {
   return boxes;
 };
 
+// continuation of the template code
 export const Experience = ({ downgradedPerformance = false }) => {
   const [players, setPlayers] = useState([]);
   const [boxes, setBoxes] = useState(generateRandomBoxes(1000, [-50, 50], [-50, 50]));
@@ -107,6 +110,7 @@ export const Experience = ({ downgradedPerformance = false }) => {
     setNetworkHits(hits);
   }, [hits]);
 
+  // included more custom code to fit the blocks logic of the game
   const removeBox = (boxId) => {
     setBoxes((prevBoxes) => {
       console.log(`Removing health box with ID ${boxId}`);
@@ -154,7 +158,7 @@ export const Experience = ({ downgradedPerformance = false }) => {
           downgradedPerformance={downgradedPerformance}
         />
       ))}
-      {(isHost() ? bullets : networkBullets).map((bullet) => (
+      {(isHost() ? bullets : networkBullets).map((bullet) => ( // part of the template
         <Bullet
           key={bullet.id}
           {...bullet}
