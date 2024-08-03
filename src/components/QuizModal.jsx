@@ -103,7 +103,7 @@ const QuizModal = ({ isOpen, onClose, onSuccess }) => {
   useEffect(() => {
     if (!isOpen) return;
 
-    // 随机选择一个问题
+    // randomly pick a question
     const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
     setQuestion(randomQuestion);
 
@@ -131,7 +131,7 @@ const QuizModal = ({ isOpen, onClose, onSuccess }) => {
       }
       onClose();
       resetQuiz();
-    }, 500);  // 半秒后关闭弹窗
+    }, 500);  // close question ui after 0.5s
   };
 
   const resetQuiz = () => {
