@@ -177,13 +177,13 @@ export const CharacterController = ({
           console.log("Player intersection detected with:", other.rigidBody.userData.type);
           if (isHost() && other.rigidBody.userData.type === "healthBox") {
             console.log("Player hit health box");
-            other.rigidBody.setEnabled(false); // 禁用小方块
+            other.rigidBody.setEnabled(false); // ban the blocks
             if (other.rigidBody.object) {
-              other.rigidBody.object.visible = false; // 确保小方块在场景中不可见
+              other.rigidBody.object.visible = false; // make sure the blocks cannot be seen
             }
             setTimeout(() => {
               other.rigidBody.removeFromParent();
-            }, 500); // 延时以确保特效完成
+            }, 500); // make a bit delay 
           }
 
           if (
